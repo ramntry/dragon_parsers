@@ -9,7 +9,7 @@
 
 // which has been manualy transformed to LL(1)-grammar:
 //     expr ::= term exprTail
-//     exprTailimpleLexer: ::= '+' term exprTail | `empty`
+//     exprTail ::= '+' term exprTail | `empty`
 //     term ::= factor termTail
 //     termTail ::= '*' factor termTail | `empty`
 //     factor ::= `number` | `empty`
