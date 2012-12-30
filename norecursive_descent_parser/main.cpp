@@ -115,6 +115,8 @@ void LexerTest()
     std::cout << lexer.nextIs(EOF) << '\n';
 }
 
+namespace ParseLib {
+
 class ParserAction
 {
 public:
@@ -240,6 +242,8 @@ bool ParseEngine::parse(int startSymbol)
     return mLexer->nextIs(EOF) && mSymbolStack.empty();
 }
 
+} // ParseLib
+
 class Parser
 {
 public:
@@ -261,15 +265,15 @@ private:
     TermTailAction *mTermTail;
     FactorExprAction *mFactorExpr;
     FactorNumberAction *mFactorNumber;
-    EmptyAction *mEmpty;
-    ErrorAction *mError;
-    TokenAction *mToken;
+    ParseLib::EmptyAction *mEmpty;
+    ParseLib::ErrorAction *mError;
+    ParseLib::TokenAction *mToken;
 
-    ParserTable *mTable;
-    ParseEngine *mEngine;
+    ParseLib::ParserTable *mTable;
+    ParseLib::ParseEngine *mEngine;
 };
 
-class Parser::ExprAction : public ParserAction
+class Parser::ExprAction : public ParseLib::ParserAction
 {
 public:
     bool execute(std::stack<int> &symbolStack, Lexer &)
@@ -279,7 +283,7 @@ public:
     }
 };
 
-class Parser::ExprTailAction : public ParserAction
+class Parser::ExprTailAction : public ParseLib::ParserAction
 {
 public:
     bool execute(std::stack<int> &symbolStack, Lexer &)
@@ -289,7 +293,7 @@ public:
     }
 };
 
-class Parser::TermAction : public ParserAction
+class Parser::TermAction : public ParseLib::ParserAction
 {
 public:
     bool execute(std::stack<int> &symbolStack, Lexer &)
@@ -299,7 +303,7 @@ public:
     }
 };
 
-class Parser::TermTailAction : public ParserAction
+class Parser::TermTailAction : public ParseLib::ParserAction
 {
 public:
     bool execute(std::stack<int> &symbolStack, Lexer &)
@@ -309,7 +313,7 @@ public:
     }
 };
 
-class Parser::FactorExprAction : public ParserAction
+class Parser::FactorExprAction : public ParseLib::ParserAction
 {
 public:
     bool execute(std::stack<int> &symbolStack, Lexer &)
@@ -319,7 +323,7 @@ public:
     }
 };
 
-class Parser::FactorNumberAction : public ParserAction
+class Parser::FactorNumberAction : public ParseLib::ParserAction
 {
 public:
     bool execute(std::stack<int> &symbolStack, Lexer &)
@@ -336,10 +340,10 @@ Parser::Parser(Lexer *lexer)
     , mTermTail(new TermTailAction)
     , mFactorExpr(new FactorExprAction)
     , mFactorNumber(new FactorNumberAction)
-    , mEmpty(new EmptyAction)
-    , mError(new ErrorAction)
-    , mToken(new TokenAction)
-    , mTable(new ParserTable)
+    , mEmpty(new ParseLib::EmptyAction)
+    , mError(new ParseLib::ErrorAction)
+    , mToken(new ParseLib::TokenAction)
+    , mTable(new ParseLib::ParserTable)
 {
     mTable->fillTable(SymbolCounter, TokenCounter, mError);
 
@@ -358,7 +362,7 @@ Parser::Parser(Lexer *lexer)
         mTable->fillSymbol(currentToken, mToken);
     }
 
-    mEngine = new ParseEngine(lexer, mTable);
+    mEngine = new ParseLib::ParseEngine(lexer, mTable);
 }
 
 Parser::~Parser()
