@@ -1,6 +1,8 @@
 #include "FirstExample.h"
 
-FirstExample::Parser::Parser(Lexer *lexer)
+using namespace FirstExample;
+
+Parser::Parser(Lexer *lexer)
 {
     mTable->fillTable(SymbolCounter, TokenCounter, &mError);
 

@@ -80,4 +80,3 @@ bool SimpleLexer::lexerTest()
     return firstTest() && secondTest();
 }
 
-

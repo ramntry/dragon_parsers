@@ -8,8 +8,8 @@ SOURCES += main.cpp \
     FirstExample.cpp
 
 HEADERS += \
-    ParserLib.h \
     LexerInterface.h \
     Lexer.h \
-    FirstExample.h
+    FirstExample.h \
+    ParseLib.h
 

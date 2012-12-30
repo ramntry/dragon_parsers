@@ -16,6 +16,7 @@ protected:
     bool push(std::stack<int> &symbolStack, int symbol1);
     bool push(std::stack<int> &symbolStack, int symbol1, int symbol2);
     bool push(std::stack<int> &symbolStack, int symbol1, int symbol2, int symbol3);
+    bool push(std::stack<int> &symbolStack, int symbol1, int symbol2, int symbol3, int symbol4);
 };
 
 class ErrorAction : public ParserAction
@@ -68,7 +69,6 @@ private:
     LexerInterface *mLexer;
     ParserTable *mTable;
 };
-
 
 class ParserBase
 {
