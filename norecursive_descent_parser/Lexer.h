@@ -9,7 +9,9 @@ namespace SimpleLexer {
 enum Token {
     Number = ParseLib::StandardTokenCounter
     , Plus
+    , Minus
     , Prod
+    , Slash
     , LBrace
     , RBrace
     , TokenCounter

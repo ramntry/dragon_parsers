@@ -29,7 +29,9 @@ int Lexer::retrieveNextToken()
     switch (nextChar)
     {
     case '+': return Plus;
+    case '-': return Minus;
     case '*': return Prod;
+    case '/': return Slash;
     case '(': return LBrace;
     case ')': return RBrace;
     default:
@@ -42,9 +44,9 @@ int Lexer::retrieveNextToken()
     }
 }
 
-bool lexerTest()
+bool firstTest()
 {
-    std::istringstream input("13 + 31 -");
+    std::istringstream input("13 + 31 #");
     Lexer lexer(input);
     bool result
           = lexer.nextIs(Number)
@@ -59,6 +61,23 @@ bool lexerTest()
          && (lexer.makeStep() == ParseLib::ERR)
          && lexer.nextIs(ParseLib::EOF);
     return result;
+}
+
+bool secondTest()
+{
+    bool result = true;
+    std::istringstream input("/-");
+    Lexer lexer(input);
+
+    result &= lexer.makeStep() == Slash;
+    result &= lexer.nextIs(Minus);
+
+    return result;
+}
+
+bool SimpleLexer::lexerTest()
+{
+    return firstTest() && secondTest();
 }
 
 
