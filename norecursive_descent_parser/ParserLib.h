@@ -6,7 +6,8 @@
 namespace ParseLib {
 
 enum StandardToken {
-    ERR = 0
+    FirstStandardToken = 0
+    , ERR = FirstStandardToken
     , EOF
     , StandardTokenCounter
 };
@@ -88,6 +89,7 @@ public:
     ParserBase();
     ~ParserBase();
     bool parse();
+    void initTokens(int tokenCounter);
 
 protected:
     virtual int startSymbol() = 0;

@@ -126,10 +126,7 @@ Parser::Parser(Lexer *lexer)
     mTable->setSpecialCase(Factor, LBrace, &mFactorExpr);
     mTable->setSpecialCase(Factor, Number, &mFactorNumber);
 
-    for (int currentToken = 0; currentToken < TokenCounter; ++currentToken) {
-        mTable->fillSymbol(currentToken, &mToken);
-    }
-
+    initTokens(TokenCounter);
     initEngine(lexer);
 }
 

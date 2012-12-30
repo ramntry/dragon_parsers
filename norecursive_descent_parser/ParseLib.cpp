@@ -89,6 +89,13 @@ void ParserBase::initEngine(LexerInterface *lexer)
     mEngine = new ParseEngine(lexer, mTable);
 }
 
+void ParserBase::initTokens(int tokenCounter)
+{
+    for (int currentToken = ParseLib::FirstStandardToken; currentToken < tokenCounter; ++currentToken) {
+        mTable->fillSymbol(currentToken, &mToken);
+    }
+}
+
 bool ParserBase::parse()
 {
     return mEngine->parse(startSymbol());
