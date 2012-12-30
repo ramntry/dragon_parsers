@@ -115,6 +115,9 @@ void LexerTest()
     std::cout << lexer.nextIs(EOF) << '\n';
 }
 
+
+// ParseLib starts
+
 namespace ParseLib {
 
 class ParserAction
@@ -255,7 +258,48 @@ bool ParseEngine::parse(int startSymbol)
     return mLexer->nextIs(EOF) && mSymbolStack.empty();
 }
 
-} // ParseLib
+class ParserBase
+{
+public:
+    ParserBase();
+    ~ParserBase();
+    bool parse();
+
+protected:
+    virtual int startSymbol() = 0;
+    void initEngine(Lexer *lexer);
+
+    EmptyAction mEmpty;
+    ErrorAction mError;
+    TokenAction mToken;
+
+    ParserTable *mTable;
+    ParseEngine *mEngine;
+};
+
+ParserBase::ParserBase()
+    : mTable(new ParserTable)
+    , mEngine(0)
+{
+}
+
+void ParserBase::initEngine(Lexer *lexer)
+{
+    mEngine = new ParseEngine(lexer, mTable);
+}
+
+bool ParserBase::parse()
+{
+    return mEngine->parse(startSymbol());
+}
+
+ParserBase::~ParserBase()
+{
+    delete mEngine;
+    delete mTable;
+}
+
+} // namespace ParseLib
 
 #define NewNonterminalAction(ActionName) \
 class ActionName : public ParseLib::NonterminalAction \
@@ -269,12 +313,16 @@ public: \
     } \
 } variableName
 
-class Parser
+// ParseLib ends
+
+
+class Parser : public ParseLib::ParserBase
 {
 public:
     Parser(Lexer *lexer);
-    ~Parser();
-    bool parse();
+
+protected:
+    int startSymbol() { return Expr; }
 
 private:
     NewNonterminalAction        (ExprAction) Term, ExprTail         EndNA(mExpr);
@@ -283,17 +331,9 @@ private:
     NewNonterminalAction    (TermTailAction) Prod, Factor, TermTail EndNA(mTermTail);
     NewNonterminalAction  (FactorExprAction) LBrace, Expr, RBrace   EndNA(mFactorExpr);
     NewNonterminalAction(FactorNumberAction) Number                 EndNA(mFactorNumber);
-
-    ParseLib::EmptyAction mEmpty;
-    ParseLib::ErrorAction mError;
-    ParseLib::TokenAction mToken;
-
-    ParseLib::ParserTable *mTable;
-    ParseLib::ParseEngine *mEngine;
 };
 
 Parser::Parser(Lexer *lexer)
-    : mTable(new ParseLib::ParserTable)
 {
     mTable->fillTable(SymbolCounter, TokenCounter, &mError);
 
@@ -312,18 +352,7 @@ Parser::Parser(Lexer *lexer)
         mTable->fillSymbol(currentToken, &mToken);
     }
 
-    mEngine = new ParseLib::ParseEngine(lexer, mTable);
-}
-
-Parser::~Parser()
-{
-    delete mEngine;
-    delete mTable;
-}
-
-bool Parser::parse()
-{
-    return mEngine->parse(Expr);
+    initEngine(lexer);
 }
 
 int main()
