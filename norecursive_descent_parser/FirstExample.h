@@ -2,7 +2,7 @@
 #include "ParseLib.h"
 #include "Lexer.h"
 
-// Exaple for grammar:
+// Example for grammar:
 //     expr ::= expr '+' term | term
 //     term ::= term '*' factor | factor
 //     factor ::= `number` | '(' expr ')'
