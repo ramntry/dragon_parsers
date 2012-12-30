@@ -4,126 +4,29 @@
 #include <vector>
 #include <stack>
 
-// Note: Token `TokenCounter` should be the last in the enum
-enum Token {
-    Number = 0
-    , Plus
-    , Prod
-    , LBrace
-    , RBrace
-    , EOF
-    , ERR
-    , TokenCounter
-};
-
-// Note: Nonterminal `Start` should be the first in the enum and equals the Token `TokenCounter`
-// Note: Nonterminal `NonterminalCounter` should be the last in the enum
-enum Nonterminal {
-    Expr = TokenCounter
-    , ExprTail
-    , Term
-    , TermTail
-    , Factor
-    , SymbolCounter
-};
-
-class Lexer
-{
-public:
-    Lexer(std::istream &input);
-    Token makeStep();
-    Token getNext();
-    bool nextIs(Token token);
-    int nextNumberValue();
-
-private:
-    Token retrieveNextToken();
-
-    std::istream &mInput;
-    int mNextNumberValue;
-    Token mNextToken;
-};
-
-Lexer::Lexer(std::istream &input)
-    : mInput(input)
-    , mNextToken(retrieveNextToken())
-{
-}
-
-int Lexer::nextNumberValue()
-{
-    return mNextNumberValue;
-}
-
-bool Lexer::nextIs(Token token)
-{
-    return token == mNextToken;
-}
-
-Token Lexer::makeStep()
-{
-    Token result = mNextToken;
-    mNextToken = retrieveNextToken();
-    return result;
-}
-
-Token Lexer::getNext()
-{
-    return mNextToken;
-}
-
-Token Lexer::retrieveNextToken()
-{
-    mNextNumberValue = -1;
-
-    char nextChar = 0;
-    mInput >> nextChar;
-    if (!mInput) {
-        return EOF;
-    }
-
-    switch (nextChar)
-    {
-    case '+': return Plus;
-    case '*': return Prod;
-    case '(': return LBrace;
-    case ')': return RBrace;
-    default:
-        if (isdigit(nextChar)) {
-            mInput.putback(nextChar);
-            mInput >> mNextNumberValue;
-            return Number;
-        }
-        return ERR;
-    }
-}
-
-void LexerTest()
-{
-    std::istringstream input("13 + 31 -");
-    Lexer lexer(input);
-    std::cout << lexer.nextIs(Number) << '\n';
-    std::cout << (lexer.nextNumberValue() == 13) << '\n';
-    std::cout << (lexer.makeStep() == Number) << '\n';
-    std::cout << lexer.nextIs(Plus) << '\n';
-    std::cout << (lexer.makeStep() == Plus) << '\n';
-    std::cout << lexer.nextIs(Number) << '\n';
-    std::cout << (lexer.nextNumberValue() == 31) << '\n';
-    std::cout << (lexer.makeStep() == Number) << '\n';
-    std::cout << lexer.nextIs(ERR) << '\n';
-    std::cout << (lexer.makeStep() == ERR) << '\n';
-    std::cout << lexer.nextIs(EOF) << '\n';
-}
-
 
 // ParseLib starts
 
 namespace ParseLib {
 
+enum StandardToken {
+    ERR = 0
+    , EOF
+    , StandardTokenCounter
+};
+
+class LexerInterface
+{
+public:
+    virtual int makeStep() = 0;
+    virtual int getNext() = 0;
+    virtual bool nextIs(int token) = 0;
+};
+
 class ParserAction
 {
 public:
-    virtual bool execute(std::stack<int> &symbolStack, Lexer &lexer) = 0;
+    virtual bool execute(std::stack<int> &symbolStack, LexerInterface &lexer) = 0;
 
 protected:
     bool push(std::stack<int> &symbolStack, int symbol1);
@@ -152,22 +55,22 @@ bool ParserAction::push(std::stack<int> &symbolStack, int symbol1, int symbol2, 
 class ErrorAction : public ParserAction
 {
 public:
-    bool execute(std::stack<int> &, Lexer &) { return false; }
+    bool execute(std::stack<int> &, LexerInterface &) { return false; }
 };
 
 class EmptyAction : public ParserAction
 {
 public:
-    bool execute(std::stack<int> &symbolStack, Lexer &) { symbolStack.pop(); return true; }
+    bool execute(std::stack<int> &symbolStack, LexerInterface &) { symbolStack.pop(); return true; }
 };
 
 class TokenAction : public ParserAction
 {
 public:
-    bool execute(std::stack<int> &symbolStack, Lexer &lexer);
+    bool execute(std::stack<int> &symbolStack, LexerInterface &lexer);
 };
 
-bool TokenAction::execute(std::stack<int> &symbolStack, Lexer &lexer)
+bool TokenAction::execute(std::stack<int> &symbolStack, LexerInterface &lexer)
 {
     bool match = symbolStack.top() == lexer.getNext();
     if (!match) {
@@ -182,10 +85,10 @@ class NonterminalAction : public ParserAction
 {
 public:
     virtual bool executeAfterPop(std::stack<int> &symbolStack) = 0;
-    bool execute(std::stack<int> &symbolStack, Lexer &lexer);
+    bool execute(std::stack<int> &symbolStack, LexerInterface &lexer);
 };
 
-bool NonterminalAction::execute(std::stack<int> &symbolStack, Lexer &)
+bool NonterminalAction::execute(std::stack<int> &symbolStack, LexerInterface &)
 {
     symbolStack.pop();
     return executeAfterPop(symbolStack);
@@ -194,10 +97,10 @@ bool NonterminalAction::execute(std::stack<int> &symbolStack, Lexer &)
 class ParserTable
 {
 public:
-    ParserAction *at(int symbol, Token token);
+    ParserAction *at(int symbol, int token);
     void fillTable(int numofSymbols, int numofTokens, ParserAction *action);
     void fillSymbol(int symbol, ParserAction *action);
-    void setSpecialCase(int symbol, Token token, ParserAction *action);
+    void setSpecialCase(int symbol, int token, ParserAction *action);
 
 private:
     typedef std::vector<ParserAction *> RowForTokens;
@@ -205,7 +108,7 @@ private:
     Table mTable;
 };
 
-ParserAction *ParserTable::at(int symbol, Token token)
+ParserAction *ParserTable::at(int symbol, int token)
 {
     return mTable.at(symbol).at(token);
 }
@@ -216,7 +119,7 @@ void ParserTable::fillTable(int numofSymbols, int numofTokens, ParserAction *act
     mTable.swap(filledTable);
 }
 
-void ParserTable::setSpecialCase(int symbol, Token token, ParserAction *action)
+void ParserTable::setSpecialCase(int symbol, int token, ParserAction *action)
 {
     mTable.at(symbol).at(token) = action;
 }
@@ -230,16 +133,16 @@ void ParserTable::fillSymbol(int symbol, ParserAction *action)
 class ParseEngine
 {
 public:
-    ParseEngine(Lexer *lexer, ParserTable *table);
+    ParseEngine(LexerInterface *lexer, ParserTable *table);
     bool parse(int startSymbol);
 
 private:
     std::stack<int> mSymbolStack;
-    Lexer *mLexer;
+    LexerInterface *mLexer;
     ParserTable *mTable;
 };
 
-ParseEngine::ParseEngine(Lexer *lexer, ParserTable *table)
+ParseEngine::ParseEngine(LexerInterface *lexer, ParserTable *table)
     : mLexer(lexer)
     , mTable(table)
 {
@@ -267,7 +170,7 @@ public:
 
 protected:
     virtual int startSymbol() = 0;
-    void initEngine(Lexer *lexer);
+    void initEngine(LexerInterface *lexer);
 
     EmptyAction mEmpty;
     ErrorAction mError;
@@ -283,7 +186,7 @@ ParserBase::ParserBase()
 {
 }
 
-void ParserBase::initEngine(Lexer *lexer)
+void ParserBase::initEngine(LexerInterface *lexer)
 {
     mEngine = new ParseEngine(lexer, mTable);
 }
@@ -315,6 +218,116 @@ public: \
 
 // ParseLib ends
 
+
+// Note: the first Token should be equals `ParseLib::StandardTokenCounter`
+// Note: Token `TokenCounter` should be the last in the enum
+enum Token {
+    Number = ParseLib::StandardTokenCounter
+    , Plus
+    , Prod
+    , LBrace
+    , RBrace
+    , TokenCounter
+};
+
+// Note: the first Nonterminal should be equals the Token `TokenCounter`
+// Note: Nonterminal `SymbolCounter` should be the last in the enum
+enum Nonterminal {
+    Expr = TokenCounter
+    , ExprTail
+    , Term
+    , TermTail
+    , Factor
+    , SymbolCounter
+};
+
+class Lexer : public ParseLib::LexerInterface
+{
+public:
+    Lexer(std::istream &input);
+    int makeStep();
+    int getNext();
+    bool nextIs(int token);
+    int nextNumberValue();
+
+private:
+    int retrieveNextToken();
+
+    std::istream &mInput;
+    int mNextNumberValue;
+    int mNextToken;
+};
+
+Lexer::Lexer(std::istream &input)
+    : mInput(input)
+    , mNextToken(retrieveNextToken())
+{
+}
+
+int Lexer::nextNumberValue()
+{
+    return mNextNumberValue;
+}
+
+bool Lexer::nextIs(int token)
+{
+    return token == mNextToken;
+}
+
+int Lexer::makeStep()
+{
+    int result = mNextToken;
+    mNextToken = retrieveNextToken();
+    return result;
+}
+
+int Lexer::getNext()
+{
+    return mNextToken;
+}
+
+int Lexer::retrieveNextToken()
+{
+    mNextNumberValue = -1;
+
+    char nextChar = 0;
+    mInput >> nextChar;
+    if (!mInput) {
+        return ParseLib::EOF;
+    }
+
+    switch (nextChar)
+    {
+    case '+': return Plus;
+    case '*': return Prod;
+    case '(': return LBrace;
+    case ')': return RBrace;
+    default:
+        if (isdigit(nextChar)) {
+            mInput.putback(nextChar);
+            mInput >> mNextNumberValue;
+            return Number;
+        }
+        return ParseLib::ERR;
+    }
+}
+
+void LexerTest()
+{
+    std::istringstream input("13 + 31 -");
+    Lexer lexer(input);
+    std::cout << lexer.nextIs(Number) << '\n';
+    std::cout << (lexer.nextNumberValue() == 13) << '\n';
+    std::cout << (lexer.makeStep() == Number) << '\n';
+    std::cout << lexer.nextIs(Plus) << '\n';
+    std::cout << (lexer.makeStep() == Plus) << '\n';
+    std::cout << lexer.nextIs(Number) << '\n';
+    std::cout << (lexer.nextNumberValue() == 31) << '\n';
+    std::cout << (lexer.makeStep() == Number) << '\n';
+    std::cout << lexer.nextIs(ParseLib::ERR) << '\n';
+    std::cout << (lexer.makeStep() == ParseLib::ERR) << '\n';
+    std::cout << lexer.nextIs(ParseLib::EOF) << '\n';
+}
 
 class Parser : public ParseLib::ParserBase
 {
