@@ -7,7 +7,7 @@
 //     term ::= term '*' factor | factor
 //     factor ::= `number` | '(' expr ')'
 
-// which has been manualy transformed to grammar:
+// which has been manualy transformed to LL(1)-grammar:
 //     expr ::= term exprTail
 //     exprTailimpleLexer: ::= '+' term exprTail | `empty`
 //     term ::= factor termTail
