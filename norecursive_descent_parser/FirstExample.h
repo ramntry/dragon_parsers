@@ -12,7 +12,7 @@
 //     exprTail ::= '+' term exprTail | `empty`
 //     term ::= factor termTail
 //     termTail ::= '*' factor termTail | `empty`
-//     factor ::= `number` | `empty`
+//     factor ::= `number` | '(' expr ')'
 
 namespace FirstExample {
 
