@@ -1,6 +1,7 @@
 #include <iostream>
 #include <sstream>
 #include "FirstExample.h"
+#include "VerySimpleExample.h"
 
 int main()
 {
@@ -13,4 +14,9 @@ int main()
     SimpleLexer::Lexer lexer(input);
     FirstExample::Parser parser(&lexer);
     std::cout << std::boolalpha << parser.parse() << std::endl;
+
+    std::istringstream input2("(((()()(()())(()(()())))))");
+    SimpleLexer::Lexer lexer2(input2);
+    VerySimpleExample::Parser parser2(&lexer2);
+    std::cout << std::boolalpha << parser2.parse() << std::endl;
 }
