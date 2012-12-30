@@ -175,6 +175,19 @@ bool TokenAction::execute(std::stack<int> &symbolStack, Lexer &lexer)
     return true;
 }
 
+class NonterminalAction : public ParserAction
+{
+public:
+    virtual bool executeAfterPop(std::stack<int> &symbolStack) = 0;
+    bool execute(std::stack<int> &symbolStack, Lexer &lexer);
+};
+
+bool NonterminalAction::execute(std::stack<int> &symbolStack, Lexer &)
+{
+    symbolStack.pop();
+    return executeAfterPop(symbolStack);
+}
+
 class ParserTable
 {
 public:
@@ -244,6 +257,18 @@ bool ParseEngine::parse(int startSymbol)
 
 } // ParseLib
 
+#define NewNonterminalAction(ActionName) \
+class ActionName : public ParseLib::NonterminalAction \
+{ \
+public: \
+    bool executeAfterPop(std::stack<int> &symbolStack) \
+    { \
+        return push(symbolStack,
+#define EndNA(variableName) \
+); \
+    } \
+} variableName
+
 class Parser
 {
 public:
@@ -252,114 +277,39 @@ public:
     bool parse();
 
 private:
-    class ExprAction;
-    class ExprTailAction;
-    class TermAction;
-    class TermTailAction;
-    class FactorExprAction;
-    class FactorNumberAction;
+    NewNonterminalAction        (ExprAction) Term, ExprTail         EndNA(mExpr);
+    NewNonterminalAction    (ExprTailAction) Plus, Term, ExprTail   EndNA(mExprTail);
+    NewNonterminalAction        (TermAction) Factor, TermTail       EndNA(mTerm);
+    NewNonterminalAction    (TermTailAction) Prod, Factor, TermTail EndNA(mTermTail);
+    NewNonterminalAction  (FactorExprAction) LBrace, Expr, RBrace   EndNA(mFactorExpr);
+    NewNonterminalAction(FactorNumberAction) Number                 EndNA(mFactorNumber);
 
-    ExprAction *mExpr;
-    ExprTailAction *mExprTail;
-    TermAction *mTerm;
-    TermTailAction *mTermTail;
-    FactorExprAction *mFactorExpr;
-    FactorNumberAction *mFactorNumber;
-    ParseLib::EmptyAction *mEmpty;
-    ParseLib::ErrorAction *mError;
-    ParseLib::TokenAction *mToken;
+    ParseLib::EmptyAction mEmpty;
+    ParseLib::ErrorAction mError;
+    ParseLib::TokenAction mToken;
 
     ParseLib::ParserTable *mTable;
     ParseLib::ParseEngine *mEngine;
 };
 
-class Parser::ExprAction : public ParseLib::ParserAction
-{
-public:
-    bool execute(std::stack<int> &symbolStack, Lexer &)
-    {
-        symbolStack.pop();
-        return push(symbolStack, Term, ExprTail);
-    }
-};
-
-class Parser::ExprTailAction : public ParseLib::ParserAction
-{
-public:
-    bool execute(std::stack<int> &symbolStack, Lexer &)
-    {
-        symbolStack.pop();
-        return push(symbolStack, Plus, Term, ExprTail);
-    }
-};
-
-class Parser::TermAction : public ParseLib::ParserAction
-{
-public:
-    bool execute(std::stack<int> &symbolStack, Lexer &)
-    {
-        symbolStack.pop();
-        return push(symbolStack, Factor, TermTail);
-    }
-};
-
-class Parser::TermTailAction : public ParseLib::ParserAction
-{
-public:
-    bool execute(std::stack<int> &symbolStack, Lexer &)
-    {
-        symbolStack.pop();
-        return push(symbolStack, Prod, Factor, TermTail);
-    }
-};
-
-class Parser::FactorExprAction : public ParseLib::ParserAction
-{
-public:
-    bool execute(std::stack<int> &symbolStack, Lexer &)
-    {
-        symbolStack.pop();
-        return push(symbolStack, LBrace, Expr, RBrace);
-    }
-};
-
-class Parser::FactorNumberAction : public ParseLib::ParserAction
-{
-public:
-    bool execute(std::stack<int> &symbolStack, Lexer &)
-    {
-        symbolStack.pop();
-        return push(symbolStack, Number);
-    }
-};
-
 Parser::Parser(Lexer *lexer)
-    : mExpr(new ExprAction)
-    , mExprTail(new ExprTailAction)
-    , mTerm(new TermAction)
-    , mTermTail(new TermTailAction)
-    , mFactorExpr(new FactorExprAction)
-    , mFactorNumber(new FactorNumberAction)
-    , mEmpty(new ParseLib::EmptyAction)
-    , mError(new ParseLib::ErrorAction)
-    , mToken(new ParseLib::TokenAction)
-    , mTable(new ParseLib::ParserTable)
+    : mTable(new ParseLib::ParserTable)
 {
-    mTable->fillTable(SymbolCounter, TokenCounter, mError);
+    mTable->fillTable(SymbolCounter, TokenCounter, &mError);
 
-    mTable->fillSymbol(Expr, mExpr);
-    mTable->fillSymbol(ExprTail, mEmpty);
-    mTable->setSpecialCase(ExprTail, Plus, mExprTail);
+    mTable->fillSymbol(Expr, &mExpr);
+    mTable->fillSymbol(ExprTail, &mEmpty);
+    mTable->setSpecialCase(ExprTail, Plus, &mExprTail);
 
-    mTable->fillSymbol(Term, mTerm);
-    mTable->fillSymbol(TermTail, mEmpty);
-    mTable->setSpecialCase(TermTail, Prod, mTermTail);
+    mTable->fillSymbol(Term, &mTerm);
+    mTable->fillSymbol(TermTail, &mEmpty);
+    mTable->setSpecialCase(TermTail, Prod, &mTermTail);
 
-    mTable->setSpecialCase(Factor, LBrace, mFactorExpr);
-    mTable->setSpecialCase(Factor, Number, mFactorNumber);
+    mTable->setSpecialCase(Factor, LBrace, &mFactorExpr);
+    mTable->setSpecialCase(Factor, Number, &mFactorNumber);
 
     for (int currentToken = 0; currentToken < TokenCounter; ++currentToken) {
-        mTable->fillSymbol(currentToken, mToken);
+        mTable->fillSymbol(currentToken, &mToken);
     }
 
     mEngine = new ParseLib::ParseEngine(lexer, mTable);
@@ -369,16 +319,6 @@ Parser::~Parser()
 {
     delete mEngine;
     delete mTable;
-
-    delete mToken;
-    delete mError;
-    delete mEmpty;
-    delete mFactorNumber;
-    delete mFactorExpr;
-    delete mTermTail;
-    delete mTerm;
-    delete mExprTail;
-    delete mExpr;
 }
 
 bool Parser::parse()
