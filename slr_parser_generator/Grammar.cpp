@@ -13,7 +13,6 @@ void Grammar::printRulesForNonterminal(const Nonterminal *nonterminal) const
     static std::set<int> alreadyPrinted;
     static int absoluteCounter = 0;
     alreadyPrinted.insert(nonterminal->id());
-    std::set<int>::const_iterator notFound = alreadyPrinted.end();
     std::vector<const Nonterminal *> toPrint;
 
     std::size_t numofRules = nonterminal->sententialForms().size();
@@ -25,7 +24,7 @@ void Grammar::printRulesForNonterminal(const Nonterminal *nonterminal) const
             const Nonterminal *nonterminal = (**ruleIt).getAsNonterminal();
             if (nonterminal) {
                 std::cout << " n";
-                if (alreadyPrinted.find(nonterminal->id()) == notFound) {
+                if (alreadyPrinted.find(nonterminal->id()) == alreadyPrinted.end()) {
                     toPrint.push_back(nonterminal);
                     alreadyPrinted.insert(nonterminal->id());
                 }
