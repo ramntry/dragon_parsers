@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 
+class Nonterminal;
+
 class Symbol
 {
 public:
@@ -12,9 +14,11 @@ public:
     typedef SententialForms::const_iterator FormsIterator;
 
     Symbol();
-    ~Symbol();
+    virtual ~Symbol();
+    int id() const { return mId; }
 
     operator SententialFormPointer() const;
+    const Nonterminal *getAsNonterminal() const;
 
 private:
     static int mIdCounter;

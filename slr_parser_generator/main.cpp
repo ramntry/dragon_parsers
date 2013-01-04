@@ -1,13 +1,12 @@
 #include "Terminal.h"
 #include "Nonterminal.h"
-
-#define UNUSED_VAR(var) for (; &var - &var; )
+#include "Grammar.h"
 
 void simpleTest();
 
-struct CalcGrammar
+struct CalcGrammar : public Grammar
 {
-    CalcGrammar()
+    CalcGrammar() : Grammar(expr)
     {
         expr = term
              | expr >> plus >> term
@@ -26,12 +25,27 @@ struct CalcGrammar
     Nonterminal expr, term, factor;
 };
 
+struct BracesGrammar : public Grammar
+{
+    BracesGrammar() : Grammar(s)
+    {
+        s = lb >> s >> rb >> s;
+    }
+
+    Terminal lb, rb;
+    Nonterminal s;
+};
+
 int main()
 {
     simpleTest();
-    CalcGrammar grammar;
 
-    UNUSED_VAR(grammar);
+    CalcGrammar grammar;
+    grammar.test();
+
+    BracesGrammar grammar2;
+    grammar2.test();
+
     return 0;
 }
 

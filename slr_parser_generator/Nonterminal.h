@@ -10,6 +10,9 @@ public:
     void operator =(const Symbol &rhs);
     void operator =(const SententialForms *rhs);
 
+    const SententialForms &sententialForms() const { return *mSententialForms; }
+    const SententialForm &sententialFormAt(std::size_t index) const { return *sententialForms().at(index); }
+
 private:
     const SententialForms *mSententialForms;
 };

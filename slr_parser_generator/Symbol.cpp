@@ -1,4 +1,4 @@
-#include "Symbol.h"
+#include "Nonterminal.h"
 
 int Symbol::mIdCounter = 0;
 
@@ -43,4 +43,9 @@ Symbol::SententialForms *operator |(Symbol::SententialForms *lhs, const Symbol::
 Symbol::SententialForms *operator |(Symbol::SententialFormPointer lhs, const Symbol::SententialFormPointer rhs)
 {
     return static_cast<Symbol::SententialForms *>(lhs) | rhs;
+}
+
+const Nonterminal *Symbol::getAsNonterminal() const
+{
+    return dynamic_cast<const Nonterminal *>(this);
 }
