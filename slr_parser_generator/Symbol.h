@@ -15,6 +15,7 @@ public:
 
     Symbol();
     virtual ~Symbol();
+
     int id() const { return mId; }
 
     operator SententialFormPointer() const;

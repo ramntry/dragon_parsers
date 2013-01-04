@@ -23,28 +23,25 @@ struct CalcGrammar : public Grammar
 
     Terminal number, lbrace, rbrace, plus, prod;
     Nonterminal expr, term, factor;
-};
+}
+grammar;
 
 struct BracesGrammar : public Grammar
 {
     BracesGrammar() : Grammar(s)
     {
-        s = lb >> s >> rb >> s;
+        s = grammar.lbrace >> s >> grammar.rbrace >> s;
     }
 
-    Terminal lb, rb;
     Nonterminal s;
-};
+}
+grammar2;
 
 int main()
 {
     simpleTest();
-
-    CalcGrammar grammar;
-    grammar.test();
-
-    BracesGrammar grammar2;
     grammar2.test();
+    grammar.test();
 
     return 0;
 }
