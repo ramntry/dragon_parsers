@@ -5,8 +5,9 @@ class Nonterminal : public Symbol
 {
 public:
     Nonterminal();
+    ~Nonterminal();
+
     void operator =(const Symbol &rhs);
-    void operator =(SententialFormPointer rhs);
     void operator =(const SententialForms *rhs);
 
 private:

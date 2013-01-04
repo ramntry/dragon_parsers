@@ -8,7 +8,13 @@ public:
     typedef std::vector<const SententialForm *> SententialForms;
     struct SententialFormPointer;
 
+    typedef SententialForm::const_iterator FormIterator;
+    typedef SententialForms::const_iterator FormsIterator;
+
     Symbol();
+    ~Symbol();
+
+    operator SententialFormPointer() const;
 
 private:
     static int mIdCounter;
@@ -20,10 +26,9 @@ struct Symbol::SententialFormPointer
 {
     SententialForm *const m;
     SententialFormPointer(SententialForm *pointer) : m(pointer) {}
+    operator SententialForms *() const;
 };
 
-Symbol::SententialFormPointer operator >>(const Symbol &lhs, const Symbol &rhs);
 Symbol::SententialFormPointer operator >>(Symbol::SententialFormPointer lhs, const Symbol &rhs);
-
 Symbol::SententialForms *operator |(Symbol::SententialFormPointer lhs, const Symbol::SententialFormPointer rhs);
-Symbol::SententialForms *operator |(Symbol::SententialFormPointer lhs, const Symbol &rhs);
+Symbol::SententialForms *operator |(Symbol::SententialForms *lhs, const Symbol::SententialFormPointer rhs);

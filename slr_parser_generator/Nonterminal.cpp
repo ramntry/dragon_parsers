@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "Nonterminal.h"
 
 Nonterminal::Nonterminal()
@@ -5,24 +6,25 @@ Nonterminal::Nonterminal()
 {
 }
 
-void Nonterminal::operator =(const Symbol &rhs)
+Nonterminal::~Nonterminal()
 {
-    SententialForm *sententialForm = new SententialForm;
-    sententialForm->push_back(&rhs);
-
-    (*this) = sententialForm;
+    if (mSententialForms == 0) {
+        return;
+    }
+    FormsIterator formsEnd = mSententialForms->end();
+    for (FormsIterator formsIt = mSententialForms->begin(); formsIt != formsEnd; ++formsIt) {
+        delete *formsIt;
+    }
+    delete mSententialForms;
 }
 
-void Nonterminal::operator =(SententialFormPointer rhs)
+void Nonterminal::operator =(const Symbol &rhs)
 {
-    SententialForms *sententialForms = new SententialForms;
-    sententialForms->push_back(rhs.m);
-
-    (*this) = sententialForms;
+    (*this) = static_cast<SententialFormPointer>(rhs);
 }
 
 void Nonterminal::operator =(const Symbol::SententialForms *rhs)
 {
+    assert(mSententialForms == 0);
     mSententialForms = rhs;
 }
-
