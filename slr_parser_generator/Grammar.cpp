@@ -10,8 +10,9 @@ Grammar::Grammar(const Nonterminal &startNonterminal)
 {
 }
 
-void Grammar::printFormsForNonterminal(const Nonterminal *nonterminal) const
+void Grammar::printFormsForNonterminal(const Nonterminal *nonterminal)
 {
+    init();
     static std::set<int> alreadyPrinted;
     static int absoluteCounter = 0;
     alreadyPrinted.insert(nonterminal->id());
@@ -22,7 +23,7 @@ void Grammar::printFormsForNonterminal(const Nonterminal *nonterminal) const
         std::cout << "Form No (" << absoluteCounter++ << ", " << i << ") for n" << nonterminal->id() << ":";
         Symbol::FormIterator formEnd = nonterminal->formEndAt(i);
         for (Symbol::FormIterator formIt = nonterminal->formBeginAt(i); formIt != formEnd; ++formIt) {
-            const Nonterminal *nonterminal = (**formIt).getAsNonterminal();
+            const Nonterminal *nonterminal = (**formIt).asNonterminal();
             if (nonterminal) {
                 std::cout << " n";
                 if (alreadyPrinted.find(nonterminal->id()) == alreadyPrinted.end()) {
@@ -50,7 +51,7 @@ void Grammar::printAllFirstSets()
     init();
     IdToSet::const_iterator setEnd = mFirstSets.end();
     for (IdToSet::const_iterator setIt = mFirstSets.begin(); setIt != setEnd; ++setIt) {
-        std::cout << "First set for n" << setIt->first << ":";
+        std::cout << "     First set for n" << setIt->first << ":";
         IdSet::const_iterator end = setIt->second.end();
         for (IdSet::const_iterator it = setIt->second.begin(); it != end; ++it) {
             std::cout << " t" << *it;
@@ -64,10 +65,8 @@ void Grammar::init()
     if (mInited) {
         return;
     }
-
     makeFirstSets();
     makeFollowSets();
-
     mInited = true;
 }
 
@@ -85,10 +84,10 @@ const Grammar::IdSet &Grammar::makeFirstSetFor(const Nonterminal *nonterminal)
     std::size_t numofForms = nonterminal->sententialForms().size();
     for (std::size_t i = 0; i < numofForms; ++i) {
         const Symbol *firstSymbol = *nonterminal->formBeginAt(i);
-        if (firstSymbol->getAsTerminal()) {
+        if (firstSymbol->asTerminal()) {
             target.insert(firstSymbol->id());
         } else {
-            const IdSet &resultForFirstSymbol = makeFirstSetFor(firstSymbol->getAsNonterminal());
+            const IdSet &resultForFirstSymbol = makeFirstSetFor(firstSymbol->asNonterminal());
             target.insert(resultForFirstSymbol.begin(), resultForFirstSymbol.end());
         }
     }

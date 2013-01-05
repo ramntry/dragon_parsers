@@ -20,8 +20,8 @@ public:
     int id() const { return mId; }
 
     operator SententialFormPointer() const;
-    const Nonterminal *getAsNonterminal() const;
-    const Terminal *getAsTerminal() const;
+    const Nonterminal *asNonterminal() const;
+    const Terminal *asTerminal() const;
 
 private:
     static int mIdCounter;

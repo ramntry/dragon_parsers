@@ -37,11 +37,50 @@ struct BracesGrammar : public Grammar
 }
 grammar2;
 
+struct SimpleLang : public Grammar
+{
+    SimpleLang() : Grammar(program)
+    {
+        program = decls
+                ;
+
+        decls = decl
+              | decls >> decl
+              ;
+
+        decl = type >> id >> grammar.lbrace >> args >> grammar.rbrace >> stmt
+             ;
+
+        arg = type >> id
+            ;
+
+        args = arg
+             | args >> comma >> arg
+             ;
+
+        stmt = expr >> semicolon
+             | lcurl >> stmts >> rcurl
+             | while_ >> grammar.lbrace >> expr >> grammar.rbrace >> stmt
+             ;
+
+        stmts = stmt
+              | stmts >> stmt
+              ;
+    }
+
+    Terminal expr, lcurl, rcurl, semicolon, while_, id, type, comma;
+    Nonterminal program, stmt, stmts, decl, decls, arg, args;
+};
+
 int main()
 {
     simpleTest();
+
     grammar2.test();
     grammar.test();
+
+    SimpleLang langGrammar;
+    langGrammar.test();
 
     return 0;
 }
@@ -70,6 +109,7 @@ void simpleTest()
     Nonterminal r;
     Nonterminal s;
     Nonterminal t;
+    Nonterminal u;
 
     e = a;
     f = a >> b;
@@ -87,6 +127,7 @@ void simpleTest()
     p = a | b >> c | d >> a;
     q = a | b | c >> d | a | b >> c >> d;
 
+    u = s;
     r = f | g;
     s = h >> j >> h | q;
 }

@@ -46,12 +46,12 @@ Symbol::SententialForms *operator |(Symbol::SententialFormPointer lhs, const Sym
     return static_cast<Symbol::SententialForms *>(lhs) | rhs;
 }
 
-const Nonterminal *Symbol::getAsNonterminal() const
+const Nonterminal *Symbol::asNonterminal() const
 {
     return dynamic_cast<const Nonterminal *>(this);
 }
 
-const Terminal *Symbol::getAsTerminal() const
+const Terminal *Symbol::asTerminal() const
 {
     return dynamic_cast<const Terminal *>(this);
 }

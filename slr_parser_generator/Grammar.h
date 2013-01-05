@@ -11,9 +11,10 @@ public:
 
     bool inFirstSet(int terminalId, int nonterminalId);
 
-    void test();
-    void printFormsForNonterminal(const Nonterminal *nonterminal) const;
+    void printFormsForNonterminal(const Nonterminal *nonterminal);
     void printAllFirstSets();
+
+    void test();
 
 private:
     typedef std::set<int> IdSet;

@@ -28,3 +28,8 @@ void Nonterminal::operator =(const Symbol::SententialForms *rhs)
     assert(mSententialForms == 0);
     mSententialForms = rhs;
 }
+
+void Nonterminal::operator =(const Nonterminal &rhs)
+{
+    (*this) = static_cast<SententialFormPointer>(rhs);
+}
