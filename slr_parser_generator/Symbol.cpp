@@ -1,4 +1,5 @@
 #include "Nonterminal.h"
+#include "Terminal.h"
 
 int Symbol::mIdCounter = 0;
 
@@ -48,4 +49,9 @@ Symbol::SententialForms *operator |(Symbol::SententialFormPointer lhs, const Sym
 const Nonterminal *Symbol::getAsNonterminal() const
 {
     return dynamic_cast<const Nonterminal *>(this);
+}
+
+const Terminal *Symbol::getAsTerminal() const
+{
+    return dynamic_cast<const Terminal *>(this);
 }

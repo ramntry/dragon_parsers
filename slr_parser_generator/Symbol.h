@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 
+class Terminal;
 class Nonterminal;
 
 class Symbol
@@ -20,6 +21,7 @@ public:
 
     operator SententialFormPointer() const;
     const Nonterminal *getAsNonterminal() const;
+    const Terminal *getAsTerminal() const;
 
 private:
     static int mIdCounter;

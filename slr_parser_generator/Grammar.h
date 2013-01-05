@@ -8,7 +8,7 @@ public:
     virtual ~Grammar() {}
 
     void test();
-    void printRulesForNonterminal(const Nonterminal *nonterminal) const;
+    void printFormsForNonterminal(const Nonterminal *nonterminal) const;
 
 public:
     const Nonterminal *mStart;
